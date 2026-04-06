@@ -1,3 +1,38 @@
+<?php
+require_once('../classes/database.php');
+
+$con = new database();
+
+if(isset($_POST['addborrower'])) {
+
+// 1. Collect and validate inouts from user
+  $firstname = $_POST['borrower_firstname'];
+  $lastname = $_POST['borrower_lastname'];
+  $email = $_POST['borrower_email'];
+  $phone = $_POST['borrower_phone_number'];
+  $member_since = $_POST['borrower_member_since'];
+  $is_active = $_POST['is_active'];
+  $temp_password = $_POST['temp_password'];
+
+// 2. Hashed the password
+  $user_password_hash = password_hash($temp_password, PASSWORD_DEFAULT);
+
+// 3. Insert into Users table and get a new user_id
+
+  $user_id = $con->insertUser($email, $user_password_hash, $is_active);
+
+
+// 4. Insert into Borrower
+  $borrower_id = $con->insertBorrower($firstname, $lastname, $email, $phone, $member_since, $is_active);
+
+// 5. Insert into BorrowerUser
+  $bu_id = $con->insertBorrowerUser($borrower_id, $user_id);
+}
+
+
+
+?>
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -6,6 +41,7 @@
   <title>Borrowers — Admin</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
 </head>
 <body>
 <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
@@ -139,7 +175,7 @@
                 </div>
               </div>
 
-              <button class="btn btn-primary w-100 mt-3" type="submit">Create Borrower Account</button>
+              <button name ="addborrower" class="btn btn-primary w-100 mt-3" type="submit">Create Borrower Account</button>
             </form>
           </div>
         </div>
