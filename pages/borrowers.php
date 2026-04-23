@@ -1,71 +1,96 @@
 <?php
 require_once('../classes/database.php');
-
+ 
 $con = new database();
+$allusers = $con->viewBorroweruser();
+$allborrowers = $con->viewBorrowers();
 
-if(isset($_POST['addborrower'])) {
+$addressCreateStatus = null;
+$addressCreateMessage = '';
 
-// 1. Collect and validate inouts from user
-  $firstname = $_POST['borrower_firstname'];
-  $lastname = $_POST['borrower_lastname'];
-  $email = $_POST['borrower_email'];
-  $phone = $_POST['borrower_phone_number'];
-  $member_since = $_POST['borrower_member_since'];
-  $is_active = $_POST['is_active'];
-  $temp_password = $_POST['temp_password'];
+$borrowerCreateStatus = null;
+$borrowerCreateMessage = '';
 
-// 2. Hashed the password
-  $user_password_hash = password_hash($temp_password, PASSWORD_DEFAULT);
+if(isset($_POST['add_borrower'])) {
+    $Borrower_firstname = $_POST['borrower_firstname'];
+    $Borrower_lastname = $_POST['borrower_lastname'];
+    $Borrower_email = $_POST['borrower_email'];
+    $Borrower_phone_number = $_POST['borrower_phone_number'];
+    $Borrower_member_since = $_POST['borrower_member_since'];
+    $Is_active = $_POST['is_active'];
+    $temp_password = $_POST['temp_password'];
 
-// 3. Insert into Users table and get a new user_id
+    $User_password_hash = password_hash($temp_password, PASSWORD_DEFAULT);
+    try {
+        $User_ID = $con->insertUser($Borrower_email, $User_password_hash, $Is_active);
+        $Borrower_ID = $con->insertBorrowers($Borrower_firstname, $Borrower_lastname, $Borrower_email, $Borrower_phone_number, $Borrower_member_since, $Is_active);
+        $con->insertBorroweruser($Borrower_ID, $User_ID);
 
-  $user_id = $con->insertUser($email, $user_password_hash, $is_active);
-
-
-// 4. Insert into Borrower
-  $borrower_id = $con->insertBorrower($firstname, $lastname, $email, $phone, $member_since, $is_active);
-
-// 5. Insert into BorrowerUser
-  $bu_id = $con->insertBorrowerUser($borrower_id, $user_id);
+        $borrowerCreateStatus = 'success';
+        $borrowerCreateMessage = 'Borrower created Succesfully';
+    } catch(Exception $e) {
+        $borrowerCreateStatus = 'error';
+        $borrowerCreateMessage = 'Error creating borrower';
+  }
 }
 
+if(isset($_POST['add_address'])) {
+  $Borrower_ID = $_POST['borrower_id'];
+  $Ba_house_number = $_POST['ba_house_number'];
+  $Ba_street = $_POST['ba_street'];
+  $Ba_barangay = $_POST['ba_barangay'];
+  $Ba_city = $_POST['ba_city'];
+  $Ba_province = $_POST['ba_province'];
+  $Ba_postal_code = $_POST['ba_postal_code'];
+  $Is_primary = isset($_POST['is_primary']) ? $_POST['is_primary'] : 0;
+  $Ba_country = 'Philippines';
 
+  try {
+    $borroweraddrress = $con->insertBorrowerAddress($Borrower_ID, $Ba_house_number, $Ba_street, $Ba_barangay, $Ba_city, $Ba_province, $Ba_postal_code, $Ba_country, $Is_primary);
 
+    $addressCreateStatus = 'success';
+    $addressCreateMessage = 'Address added successfully.';
+  } catch (Exception $e) {
+    $addressCreateStatus = 'error';
+    $addressCreateMessage = 'Error adding address.';
+  }
+}
 ?>
-
+ 
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Borrowers — Admin</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <!--<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">-->
   <link rel="stylesheet" href="../assets/css/style.css">
-  <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
+  <link rel="stylesheet" href="../bootstrap/css/bootstrap.css">
+  <link rel="stylesheet" href="../sweetalert/dist/sweetalert2.css">
 </head>
 <body>
 <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
   <div class="container">
-    <a class="navbar-brand fw-semibold" href="admin-dashboard.html">Library Admin</a>
+    <a class="navbar-brand fw-semibold" href="admin-dashboard.php">Library Admin</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navBorrowersAdmin">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div id="navBorrowersAdmin" class="collapse navbar-collapse">
       <ul class="navbar-nav me-auto gap-lg-1">
-        <li class="nav-item"><a class="nav-link" href="admin-dashboard.html">Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="books.html">Books</a></li>
-        <li class="nav-item"><a class="nav-link active" href="borrowers.html">Borrowers</a></li>
-        <li class="nav-item"><a class="nav-link" href="checkout.html">Checkout</a></li>
-        <li class="nav-item"><a class="nav-link" href="return.html">Return</a></li>
+        <li class="nav-item"><a class="nav-link" href="admin-dashboard.php">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="books.php">Books</a></li>
+        <li class="nav-item"><a class="nav-link active" href="borrowers.php">Borrowers</a></li>
+        <li class="nav-item"><a class="nav-link" href="checkout.php">Checkout</a></li>
+        <li class="nav-item"><a class="nav-link" href="return.php">Return</a></li>
       </ul>
       <div class="d-flex align-items-center gap-2">
         <span class="badge badge-soft">Role: ADMIN</span>
-        <a class="btn btn-sm btn-outline-secondary" href="login.html">Logout</a>
+        <a class="btn btn-sm btn-outline-secondary" href="login.php">Logout</a>
       </div>
     </div>
   </div>
 </nav>
-
+ 
 <main class="container py-4">
   <div class="row g-3">
     <div class="col-12 col-lg-12">
@@ -80,7 +105,7 @@ if(isset($_POST['addborrower'])) {
             <button class="btn btn-outline-secondary">Search</button>
           </div>
         </div>
-
+ 
         <div class="table-responsive">
           <table class="table table-sm align-middle">
             <thead class="table-light">
@@ -95,34 +120,35 @@ if(isset($_POST['addborrower'])) {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>1</td>
-                <td>Juan Dela Cruz</td>
-                <td>juan.delacruz@samplemail.com</td>
-                <td><span class="badge text-bg-success">Yes</span></td>
-                <td><span class="badge text-bg-primary">Linked</span></td>
-                <td><span class="badge text-bg-success">Yes</span></td>
-                <td class="text-end">
-                  <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#resetPassModal">Reset Password</button>
-                  <button class="btn btn-sm btn-outline-secondary">Toggle Active</button>
-                </td>
-              </tr>
-              <tr>
-                <td>5</td>
-                <td>Paolo Garcia</td>
-                <td>paolo.garcia@samplemail.com</td>
-                <td><span class="badge text-bg-secondary">No</span></td>
-                <td><span class="badge text-bg-primary">Linked</span></td>
-                <td><span class="badge text-bg-secondary">No</span></td>
-                <td class="text-end">
-                  <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#resetPassModal">Reset Password</button>
-                  <button class="btn btn-sm btn-outline-secondary">Toggle Active</button>
-                </td>
-              </tr>
+
+            <?php
+            $viewBorrowers = $con->viewBorrowers();
+            foreach($viewBorrowers as $vw){
+              echo '<tr>';
+              echo '<td>'.$vw['Borrower_ID']. '</td>';
+              echo '<td>'.$vw['Borrower_firstname']. ' '.$vw['Borrower_lastname'].'</td>';
+              echo '<td>'.(isset($vw['Borrower_email']) ? $vw['Borrower_email'] : ''). '</td>';
+              echo '<td>'.($vw['Borrower_active'] == 1 
+              ? '<span class="badge text-bg-success">Yes</span>' 
+              : '<span class="badge text-bg-secondary">No</span>'). '</td>';
+              echo '<td>'.(isset($vw['User_active']) 
+              ? '<span class="badge text-bg-primary">Linked</span>' 
+              : '<span class="badge text-bg-secondary">Not Linked</span>'). '</td>';
+              echo '<td>'.(isset($vw['User_active']) ? ($vw['User_active'] == 1 
+              ? '<span class="badge text-bg-success">Yes</span>' 
+              : '<span class="badge text-bg-secondary">No</span>') 
+              : '<span class="badge text-bg-secondary">N/A</span>'). '</td>';
+              echo '<td class="text-end">';
+                echo '<button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#resetPassModal">Reset Password</button>';
+                echo '<button class="btn btn-sm btn-outline-secondary">Toggle Active</button>';
+              echo '</td>';
+              echo '</tr>';
+              }
+            ?>
             </tbody>
           </table>
         </div>
-
+ 
         <div class="small-muted mt-2">
           Rule reminder: each borrower must have exactly one account (BorrowerUser 1-to-1 mapping).
         </div>
@@ -134,7 +160,7 @@ if(isset($_POST['addborrower'])) {
           <div class="card p-4 h-100">
             <h5 class="mb-1">Register Borrower (with Account)</h5>
             <p class="small-muted mb-3">Creates <b>Borrowers</b> + <b>Users</b> + <b>BorrowerUser</b>.</p>
-
+ 
             <!-- Later in PHP: action="../php/borrowers/register.php" method="POST" -->
             <form action="#" method="POST">
               <div class="row g-2">
@@ -165,21 +191,21 @@ if(isset($_POST['addborrower'])) {
                     <option value="0">No</option>
                   </select>
                 </div>
-
+ 
                 <hr class="my-2">
-
+ 
                 <div class="col-12">
                   <label class="form-label">Temporary Password</label>
                   <input class="form-control" name="temp_password" type="password" required>
                   <div class="small-muted mt-1">In PHP: hash this and store in Users.password_hash</div>
                 </div>
               </div>
-
-              <button name ="addborrower" class="btn btn-primary w-100 mt-3" type="submit">Create Borrower Account</button>
+ 
+              <button name="add_borrower" class="btn btn-primary w-100 mt-3" type="submit">Create Borrower Account</button>
             </form>
           </div>
         </div>
-
+ 
         <div class="col-12 col-lg-6">
           <div class="card p-4 h-100">
             <h6 class="mb-2">Add Borrower Address</h6>
@@ -187,15 +213,18 @@ if(isset($_POST['addborrower'])) {
             <!-- Later in PHP: action="../php/addresses/create.php" method="POST" -->
             <form action="#" method="POST" class="row g-2">
               <div class="col-12">
+
                 <label class="form-label">Borrower</label>
+
                 <select class="form-select" name="borrower_id" required>
                   <option value="">Select borrower</option>
-                  <option value="1">Juan Dela Cruz</option>
-                  <option value="2">Maria Santos</option>
-                  <option value="3">Mark Reyes</option>
-                  <option value="4">Ana Bautista</option>
-                  <option value="6">Grace Mendoza</option>
+                  <?php
+                  foreach($allusers as $borrowers){
+                    echo '<option value="'.$borrowers['Borrower_ID'] .'"> '.'['.$borrowers['Borrower_ID'].'] ' .$borrowers['Borrower_firstname']. ' '.$borrowers['Borrower_lastname']. '</option>';
+                    }
+                  ?>
                 </select>
+
               </div>
               <div class="col-6">
                 <label class="form-label">House #</label>
@@ -229,18 +258,16 @@ if(isset($_POST['addborrower'])) {
                 </select>
               </div>
               <div class="col-12">
-                <button class="btn btn-outline-primary w-100" type="submit">Add Address</button>
+                <button class="btn btn-outline-primary w-100" type="submit" name="add_address">Add Address</button>
               </div>
             </form>
           </div>
         </div>
       </div>
     </div>
-
-    
   </div>
 </main>
-
+ 
 <!-- Reset Password Modal (UI only) -->
 <div class="modal fade" id="resetPassModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
@@ -268,6 +295,49 @@ if(isset($_POST['addborrower'])) {
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+<script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../sweetalert/dist/sweetalert2.js"></script>
+ 
+<script>
+  const createStatus = <?php echo json_encode($borrowerCreateStatus)?>;
+  const createMessage = <?php echo json_encode($borrowerCreateMessage)?>;
+
+  const addressStatus = <?php echo json_encode($addressCreateStatus)?>;
+  const addressMessage = <?php echo json_encode($addressCreateMessage)?>;
+
+  if(createStatus == 'success'){
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text:createMessage,
+      confirmButtonText: 'OK'
+    });
+  } else if(createStatus == 'error'){
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text:createMessage,
+      confirmButtonText: 'OK'
+    });
+  }
+
+  if(addressStatus == 'success'){
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text:addressMessage,
+      confirmButtonText: 'OK'
+    });
+  } else if(addressStatus == 'error'){
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text:addressMessage,
+      confirmButtonText: 'OK'
+    });
+  }
+
+
+    </script>
+  </body>
 </html>
