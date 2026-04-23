@@ -4,7 +4,7 @@ class database {
     function opencon(): PDO {
         return new PDO(
             'mysql:host=localhost;
-            dbname=dbs_app_detorres',
+            dbname=dbs_app',
             'root',
             ''
         );
