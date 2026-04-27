@@ -20,9 +20,9 @@ if(isset($_POST['add_borrower'])) {
     $is_active = $_POST['is_active'];
     $temp_password = $_POST['temp_password'];
 
-    $User_password_hash = password_hash($temp_password, PASSWORD_DEFAULT);
+    $user_password_hash = password_hash($temp_password, PASSWORD_DEFAULT);
     try {
-        $User_id = $con->insertUser($borrower_email, $user_password_hash, $is_active);
+        $user_id = $con->insertUser($borrower_email, $user_password_hash, $is_active);
         $borrower_id = $con->insertBorrowers($borrower_firstname, $borrower_lastname, $borrower_email, $borrower_phone_number, $borrower_member_since, $is_active);
         $con->insertBorroweruser($borrower_id, $user_id);
 
@@ -79,6 +79,7 @@ if(isset($_POST['add_address'])) {
       <ul class="navbar-nav me-auto gap-lg-1">
         <li class="nav-item"><a class="nav-link" href="admin-dashboard.php">Dashboard</a></li>
         <li class="nav-item"><a class="nav-link" href="books.php">Books</a></li>
+        <li class="nav-item"><a class="nav-link active" href="authors-genres.php">Authors &amp; Genres</a></li>
         <li class="nav-item"><a class="nav-link active" href="borrowers.php">Borrowers</a></li>
         <li class="nav-item"><a class="nav-link" href="checkout.php">Checkout</a></li>
         <li class="nav-item"><a class="nav-link" href="return.php">Return</a></li>
@@ -125,16 +126,16 @@ if(isset($_POST['add_address'])) {
             $viewBorrowers = $con->viewBorrowers();
             foreach($viewBorrowers as $vw){
               echo '<tr>';
-              echo '<td>'.$vw['Borrower_id']. '</td>';
-              echo '<td>'.$vw['Borrower_firstname']. ' '.$vw['Borrower_lastname'].'</td>';
-              echo '<td>'.(isset($vw['Borrower_email']) ? $vw['Borrower_email'] : ''). '</td>';
-              echo '<td>'.($vw['Borrower_active'] == 1 
+              echo '<td>'.$vw['borrower_id']. '</td>';
+              echo '<td>'.$vw['borrower_firstname']. ' '.$vw['borrower_lastname'].'</td>';
+              echo '<td>'.(isset($vw['borrower_email']) ? $vw['borrower_email'] : ''). '</td>';
+              echo '<td>'.($vw['borrower_active'] == 1 
               ? '<span class="badge text-bg-success">Yes</span>' 
               : '<span class="badge text-bg-secondary">No</span>'). '</td>';
-              echo '<td>'.(isset($vw['User_active']) 
+              echo '<td>'.(isset($vw['user_active']) 
               ? '<span class="badge text-bg-primary">Linked</span>' 
               : '<span class="badge text-bg-secondary">Not Linked</span>'). '</td>';
-              echo '<td>'.(isset($vw['User_active']) ? ($vw['User_active'] == 1 
+              echo '<td>'.(isset($vw['user_active']) ? ($vw['user_active'] == 1 
               ? '<span class="badge text-bg-success">Yes</span>' 
               : '<span class="badge text-bg-secondary">No</span>') 
               : '<span class="badge text-bg-secondary">N/A</span>'). '</td>';
@@ -220,7 +221,7 @@ if(isset($_POST['add_address'])) {
                   <option value="">Select borrower</option>
                   <?php
                   foreach($allusers as $borrowers){
-                    echo '<option value="'.$borrowers['Borrower_id'] .'"> '.'['.$borrowers['Borrower_id'].'] ' .$borrowers['Borrower_firstname']. ' '.$borrowers['Borrower_lastname']. '</option>';
+                    echo '<option value="'.$borrowers['borrower_id'] .'"> '.'['.$borrowers['borrower_id'].'] ' .$borrowers['borrower_firstname']. ' '.$borrowers['borrower_lastname']. '</option>';
                     }
                   ?>
                 </select>

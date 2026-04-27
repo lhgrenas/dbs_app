@@ -122,6 +122,7 @@ if(isset($_POST['update_book'])){
       <ul class="navbar-nav me-auto gap-lg-1">
         <li class="nav-item"><a class="nav-link" href="admin-dashboard.php">Dashboard</a></li>
         <li class="nav-item"><a class="nav-link active" href="books.php">Books</a></li>
+        <li class="nav-item"><a class="nav-link active" href="authors-genres.php">Authors &amp; Genres</a></li>
         <li class="nav-item"><a class="nav-link" href="borrowers.php">Borrowers</a></li>
         <li class="nav-item"><a class="nav-link" href="checkout.php">Checkout</a></li>
         <li class="nav-item"><a class="nav-link" href="return.php">Return</a></li>

@@ -91,7 +91,7 @@ class database {
             users.is_active AS user_active
         FROM borrowers
         LEFT JOIN borroweruser ON borrowers.borrower_id = borroweruser.borrower_id
-        LEFT JOIN users ON borroweruser.User_id = users.User_id
+        LEFT JOIN users ON borroweruser.User_id = users.user_id
         ")->fetchAll();
     }
 
@@ -138,7 +138,7 @@ class database {
             }
             throw $e;
             }
-        }
+    }
 
     function insertBookAuthors($book_id, $author_id) {
         $con = $this->opencon();
@@ -155,7 +155,7 @@ class database {
             }
             throw $e;
             }
-        }
+    }
 
     function insertBookGenre($genre_id, $book_id) {
         $con = $this->opencon();
@@ -172,8 +172,44 @@ class database {
             }
             throw $e;
             }
-        }
+    }
 
+    function insertAuthors($author_firstname, $author_lastname, $author_birth_year, $author_nationality){
+        $con = $this->opencon();
+        try {
+            $con->beginTransaction();
+            $stmt = $con->prepare('INSERT INTO authors(author_firstname, author_lastname, author_birth_year, author_nationality) VALUES (?, ?, ?, ?)');
+            $stmt->execute([$author_firstname, $author_lastname, $author_birth_year, $author_nationality]);
+            $author_id = $con->lastInsertId();
+            $con->commit();
+            return $author_id;
+        } catch (PDOException $e) {
+            if ($con->inTransaction()) {
+                $con->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    function insertGenre($genre_name){
+        $con = $this->opencon();
+
+        try{
+            $con->beginTransaction();
+            $stmt = $con->prepare('INSERT INTO genres(genre_name) VALUES(?)');
+            $stmt->execute([$genre_name]);
+            $genre_id = $con->lastInsertId();
+            $con->commit();
+            return $genre_id;
+        } catch (PDOException $e) {
+            if ($con->inTransaction()) {
+                $con->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    //Authors
     function viewAuthors() {
         $con = $this->opencon();
         return $con->query("SELECT * FROM authors")->fetchAll();
@@ -181,50 +217,40 @@ class database {
 
     function viewGenre() {
         $con = $this->opencon();
-        return $con->query("SELECT * FROM genres")->fetchAll();
+        return $con->query("SELECT * FROM genres ORDER BY 1")->fetchAll();
     }
 
     function viewBooks() {
         $con = $this->opencon();
-        return $con->query("SELECT books.book_id, books.book_title, books.book_isbn, books.book_publication_year, books.book_edition, books.book_publisher, 
-        
+        return $con->query("SELECT 
+        books.book_id, 
+        books.book_title, 
+        books.book_isbn, 
+        books.book_publication_year, 
+        books.book_edition, 
+        books.book_publisher, 
         COUNT(bookcopy.copy_id) AS copies, 
         SUM(bookcopy.bc_status = 'AVAILABLE') AS available_copies 
         FROM books 
         LEFT JOIN bookcopy ON books.book_id = bookcopy.book_id 
         GROUP BY books.book_id")->fetchAll();
     }
-    function  recentLoans() {
+    function  viewLoans() {
     $con = $this->opencon();
-    $result = $con->query("
-        SELECT 
-            loan.loan_id, 
-            CONCAT(b.borrower_firstname, ' ', b.borrower_lastname) AS borrower, 
-            loan.loan_status AS loan_status, 
-            loan.loan_date, 
-            users.username AS processed_by_user 
+    $result = $con->query("SELECT 
+        loan.loan_id, 
+        CONCAT(borrowers.borrower_firstname, ' ', borrowers.borrower_lastname) AS Borrower, 
+        loan.loan_status AS loan_status, 
+        loan.loan_date, 
+        users.username AS processed_by_user 
         FROM loan 
-        LEFT JOIN borrowers b ON loan.borrower_id = b.borrower_id 
-        LEFT JOIN users users ON loan.processed_by_user_id = users.user_id
-        ORDER BY loan.Loan_date DESC 
+        JOIN borrowers ON loan.borrower_id = borrowers.borrower_id 
+        JOIN users ON loan.processed_by_user_id = users.user_id
+        ORDER BY loan.loan_date DESC 
     ");
 
     return $result ? $result->fetchAll() : [];
     }
-    // function viewLoans() {
-    //     $con = $this->opencon();
-    //     return $con->query("SELECT 
-    //     loan.loan_id, 
-    //     CONCAT(borrowers.borrower_firstname,' ',borrowers.borrowerrs_lastname) AS Borrower,
-    //     loan.loan_status,
-    //     DATE(loan.loan_date) AS loan_date,
-    //     users.username
-    //     FROM 
-    //     loan
-    //     JOIN borrowers ON loan.borrowers_id = borrowers.borrower_id
-    //     JOIN users ON loan.processed_by_user_id = users.user_id")
-    //     ->fetchAll();
-    // }
 
     function updateBook($book_id, $book_title, $book_isbn, $book_publication_year, $book_edition, $book_publisher) {
         $con = $this->opencon();
@@ -252,8 +278,6 @@ class database {
     }
 
 }
-
-
 
 
     //For Admin Dashboard

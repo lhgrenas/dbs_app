@@ -28,6 +28,7 @@ $con = new database();
       <ul class="navbar-nav me-auto gap-lg-1">
         <li class="nav-item"><a class="nav-link active" href="admin-dashboard.html">Dashboard</a></li>
         <li class="nav-item"><a class="nav-link" href="books.php">Books</a></li>
+        <li class="nav-item"><a class="nav-link active" href="authors-genres.php">Authors &amp; Genres</a></li>
         <li class="nav-item"><a class="nav-link" href="borrowers.php">Borrowers</a></li>
         <li class="nav-item"><a class="nav-link" href="checkout.php">Checkout</a></li>
         <li class="nav-item"><a class="nav-link" href="return.php">Return</a></li>
@@ -101,17 +102,17 @@ $con = new database();
             </thead>
             <tbody>
               <?php
-                  $recentLoans = $con->recentLoans();
-                  foreach($recentLoans as $rl){
+                  $viewLoans = $con->viewLoans();
+                  foreach($viewLoans as $loans){
 
                   echo '<tr>';
-                  echo '<td>'.$rl['loan_id']. '</td>';
-                  echo '<td>'.$rl['borrower']. '</td>';
-                  echo '<td>'.(isset($rl['loan_status']) ? ($rl['loan_status'] == 'Open' 
+                  echo '<td>'.$loans['loan_id']. '</td>';
+                  echo '<td>'.$loans['Borrower']. '</td>';
+                  echo '<td>'.(isset($loans['loan_status']) ? ($loans['loan_status'] == 'Open' 
                     ? '<span class="badge text-bg-success">Open</span>' 
                     : '<span class="badge text-bg-danger">Close</span>'): ''). '</td>';
-                  echo '<td>'.$rl['loan_date']. '</td>';
-                  echo '<td>'.$rl['processed_by_user']. '</td>';
+                  echo '<td>'.$loans['loan_date']. '</td>';
+                  echo '<td>'.$loans['processed_by_user']. '</td>';
                   echo '</tr>';
 
                   }

@@ -1,3 +1,51 @@
+<?php
+  require_once('../classes/database.php');
+  
+  $con = new database();
+
+  // $authors = $con->insertAuthors();
+
+  $viewAuthors = $con->viewAuthors();
+  $viewGenre = $con->viewGenre();
+
+  $authorCreateStatus = null;
+  $authorCreateMessage = '';
+
+  $genreCreateStatus = null;
+  $genreCreateMessage ='';
+
+  if(isset($_POST['add_author'])) {
+    $author_firstname = $_POST['author_firstname'];
+    $author_lastname = $_POST['author_lastname'];
+    $author_birth_year = $_POST['author_birth_year'];
+    $author_nationality = $_POST['author_nationality'];
+
+    try{
+      $con->insertAuthors($author_firstname, $author_lastname, $author_birth_year, $author_nationality);
+      $authorCreateStatus = 'success';
+      $authorCreateMessage = 'Author added successfully';
+      } catch(Exception $e) {
+        $authorCreateStatus = 'error';
+        $addressCreateMessage = 'Error adding author';
+      }
+  }
+
+  if(isset($_POST['add_genre'])){
+
+    $genre_name = $_POST['genre_name'];
+
+    try{
+      $con->insertGenre($genre_name);
+      $genreCreateStatus = 'success'; 
+      $genreCreateMessage = 'Genre added successfully.';
+    } catch (Exception $e) {
+      $genreCreateStatus = 'error';
+      $genreCreateMessage = 'Error adding genre.';
+    } 
+  }
+
+?>
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -6,6 +54,7 @@
   <title>Authors and Genres - Admin (Teaching Demo)</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="../assets/css/style.css" />
+  <link rel="stylesheet" href="../sweetalert/dist/sweetalert2.css">
 </head>
 <body>
 <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
@@ -18,8 +67,7 @@
       <ul class="navbar-nav me-auto gap-lg-1">
         <li class="nav-item"><a class="nav-link" href="admin-dashboard.php">Dashboard</a></li>
         <li class="nav-item"><a class="nav-link" href="books.php">Books</a></li>
-          <li class="nav-item"><a class="nav-link" href="books.php">Books</a></li>
-        <li class="nav-item"><a class="nav-link active" href="authors-genres.html">Authors &amp; Genres</a></li>
+        <li class="nav-item"><a class="nav-link active" href="authors-genres.php">Authors &amp; Genres</a></li>
         <li class="nav-item"><a class="nav-link" href="borrowers.php">Borrowers</a></li>
         <li class="nav-item"><a class="nav-link" href="checkout.php">Checkout</a></li>
         <li class="nav-item"><a class="nav-link" href="return.php">Return</a></li>
@@ -59,7 +107,7 @@
             <input class="form-control" name="author_nationality" placeholder="optional" />
           </div>
           <div class="col-12">
-            <button class="btn btn-primary w-100" type="submit">Save Author</button>
+            <button name="add_author" class="btn btn-primary w-100" type="submit">Save Author</button>
           </div>
         </form>
       </div>
@@ -76,7 +124,7 @@
             <input class="form-control" name="genre_name" placeholder="e.g., Classic" required />
           </div>
           <div class="col-12">
-            <button class="btn btn-outline-primary w-100" type="submit">Save Genre</button>
+            <button name="add_genre" class="btn btn-outline-primary w-100" type="submit">Save Genre</button>
           </div>
         </form>
       </div>
@@ -100,27 +148,19 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>1</td>
-                <td>Jose</td>
-                <td>Rizal</td>
-                <td>1861</td>
-                <td>Filipino</td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>F. H.</td>
-                <td>Batacan</td>
-                <td>1960</td>
-                <td>Filipino</td>
-              </tr>
-              <tr>
-                <td>3</td>
-                <td>Lualhati</td>
-                <td>Bautista</td>
-                <td>1945</td>
-                <td>Filipino</td>
-              </tr>
+              <?php foreach($viewAuthors as $author) {
+                
+              ?>
+
+                <tr>
+                  <td><?php echo $author['author_id'] ?></td>
+                  <td><?php echo $author['author_firstname'] ?></td>
+                  <td><?php echo $author['author_lastname'] ?></td>
+                  <td><?php echo $author['author_birth_year'] ?></td>
+                  <td><?php echo $author['author_nationality'] ?></td>
+                </tr>
+
+              <?php } ?>
             </tbody>
           </table>
         </div>
@@ -142,22 +182,16 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>1</td>
-                <td>Classic</td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>Historical Fiction</td>
-              </tr>
-              <tr>
-                <td>3</td>
-                <td>Mystery/Crime</td>
-              </tr>
-              <tr>
-                <td>4</td>
-                <td>Philippine Literature</td>
-              </tr>
+              <?php foreach($viewGenre as $genre) {
+                
+              ?>
+
+                <tr>
+                  <td><?php echo $genre['genre_id'] ?></td>
+                  <td><?php echo $genre['genre_name'] ?></td>
+                </tr>
+                
+              <?php } ?>
             </tbody>
           </table>
         </div>
@@ -167,5 +201,45 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../sweetalert/dist/sweetalert2.js"></script>
+<script>
+  const authorCreateStatus = <?php echo json_encode($authorCreateStatus)?>;
+  const authorCreateMessage = <?php echo json_encode($authorCreateMessage)?>;
+  const genreCreateStatus = <?php echo json_encode($genreCreateStatus)?>;
+  const genreCreateMessage = <?php echo json_encode($genreCreateMessage)?>;
+
+  if(authorCreateStatus === 'success'){
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text: authorCreateMessage,
+      confirmButtonText: 'OK'
+    });
+  } else if(authorCreateStatus === 'error'){
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: authorCreateMessage,
+      confirmButtonText: 'OK'
+    });
+  }
+
+  if(genreCreateStatus === 'success'){
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text: genreCreateMessage,
+      confirmButtonText: 'OK'
+    });
+  } else if(genreCreateStatus === 'error'){
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: genreCreateMessage,
+      confirmButtonText: 'OK'
+    });
+  }
+</script>
 </body>
 </html>
