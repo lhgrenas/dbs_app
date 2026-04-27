@@ -9,12 +9,12 @@ class database {
             ''
         );
     }
-    function insertUser($Username, $User_password_hash, $Is_active) {
+    function insertUser($username, $user_password_hash, $is_active) {
         $con = $this->opencon();
         try {
             $con->beginTransaction();
-            $stmt = $con->prepare('INSERT INTO users (Username, User_password_hash, Is_active) VALUES (?, ?, ?)');
-            $stmt->execute([$Username, $User_password_hash, $Is_active]);
+            $stmt = $con->prepare('INSERT INTO users (username, user_password_hash, is_active) VALUES (?, ?, ?)');
+            $stmt->execute([$username, $user_password_hash, $is_active]);
             $user_id = $con->lastInsertId();
             $con->commit();
             return $user_id;
@@ -25,12 +25,12 @@ class database {
             throw $e;
         }
     }
-    function insertBorrowers($Borrower_firstname, $Borrower_lastname, $Borrower_email, $Borrower_phone_number, $Borrower_member_since, $Is_active) {
+    function insertBorrowers($borrower_firstname, $borrower_lastname, $borrower_email, $borrower_phone_number, $borrower_member_since, $is_active) {
         $con = $this->opencon();
         try {
             $con->beginTransaction();
-            $stmt = $con->prepare('INSERT INTO borrowers (Borrower_firstname, Borrower_lastname, Borrower_email, Borrower_phone_number, Borrower_member_since, Is_active) VALUES (?, ?, ?, ?, ?, ?)');
-            $stmt->execute([$Borrower_firstname, $Borrower_lastname, $Borrower_email, $Borrower_phone_number, $Borrower_member_since, $Is_active]);
+            $stmt = $con->prepare('INSERT INTO borrowers (borrower_firstname, borrower_lastname, borrower_email, borrower_phone_number, borrower_member_since, is_active) VALUES (?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$borrower_firstname, $borrower_lastname, $borrower_email, $borrower_phone_number, $borrower_member_since, $is_active]);
             $borrower_id = $con->lastInsertId();
             $con->commit();
             return $borrower_id;
@@ -41,12 +41,12 @@ class database {
             throw $e;
         }
     }
-    function insertBorroweruser($Borrower_ID, $User_ID) {
+    function insertBorroweruser($borrower_id, $user_id) {
         $con = $this->opencon();
         try {
             $con->beginTransaction();
-            $stmt = $con->prepare('INSERT INTO borroweruser (Borrower_ID, User_ID) VALUES (?, ?)');
-            $stmt->execute([$Borrower_ID, $User_ID]);
+            $stmt = $con->prepare('INSERT INTO borroweruser (borrower_id, user_id) VALUES (?, ?)');
+            $stmt->execute([$borrower_id, $user_id]);
             $bu_id = $con->lastInsertId();
             $con->commit();
             return $bu_id;
@@ -58,12 +58,12 @@ class database {
         }
     }
 
-        function insertBorrowerAddress($Borrower_ID, $Ba_house_number, $Ba_street, $Ba_barangay, $Ba_city, $Ba_province, $Ba_postal_code, $Ba_country, $Is_primary) {
+    function insertBorrowerAddress($borrower_id, $ba_house_number, $ba_street, $ba_barangay, $ba_city, $ba_province, $ba_postal_code, $ba_country, $is_primary) {
         $con = $this->opencon();
         try {
             $con->beginTransaction();
-            $stmt = $con->prepare('INSERT INTO borroweraddress (Borrower_ID, Ba_house_number, Ba_street, Ba_barangay, Ba_city, Ba_province, Ba_postal_code, Ba_country, Is_primary) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
-            $stmt->execute([$Borrower_ID, $Ba_house_number, $Ba_street, $Ba_barangay, $Ba_city, $Ba_province, $Ba_postal_code, $Ba_country, $Is_primary]);
+            $stmt = $con->prepare('INSERT INTO borroweraddress (borrower_id, ba_house_number, ba_street, ba_barangay, ba_city, ba_province, ba_postal_code, ba_country, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$borrower_id, $ba_house_number, $ba_street, $ba_barangay, $ba_city, $ba_province, $ba_postal_code, $ba_country, $is_primary]);
             $con->commit();
             return true;
         } catch (PDOException $e) {
@@ -82,36 +82,36 @@ class database {
     function viewBorrowers() {
         $con = $this->opencon();
         return $con->query("SELECT 
-            borrowers.Borrower_ID,
-            borrowers.Borrower_firstname,
-            borrowers.Borrower_lastname,
-            borrowers.Borrower_email,
-            borrowers.Is_active AS Borrower_active,
-            users.User_ID,
-            users.Is_active AS User_active
+            borrowers.borrower_id,
+            borrowers.borrower_firstname,
+            borrowers.borrower_lastname,
+            borrowers.borrower_email,
+            borrowers.is_active AS borrower_active,
+            users.user_id,
+            users.is_active AS user_active
         FROM borrowers
-        LEFT JOIN borroweruser ON borrowers.Borrower_ID = borroweruser.Borrower_ID
-        LEFT JOIN users ON borroweruser.User_ID = users.User_ID
+        LEFT JOIN borroweruser ON borrowers.borrower_id = borroweruser.borrower_id
+        LEFT JOIN users ON borroweruser.User_id = users.User_id
         ")->fetchAll();
     }
 
-        function resetUserPassword($userId, $newPassword) {
+    function resetUserPassword($userId, $newPassword) {
         $con = $this->opencon();
-        $User_password_hash = password_hash($newPassword, PASSWORD_DEFAULT);
-        $stmt = $con->prepare('UPDATE users SET User_password_hash = ? WHERE User_ID = ?');
-        return $stmt->execute([$User_password_hash, $userId]);
+        $user_password_hash = password_hash($newPassword, PASSWORD_DEFAULT);
+        $stmt = $con->prepare('UPDATE users SET user_password_hash = ? WHERE user_id = ?');
+        return $stmt->execute([$user_password_hash, $userId]);
     }
 
 
 
 
     //For Books
-    function insertBook($Book_title, $Book_isbn, $Book_publication_year, $Book_edition, $Book_publisher) {
+    function insertBook($book_title, $book_isbn, $book_publication_year, $book_edition, $book_publisher) {
         $con = $this->opencon();
         try {
             $con->beginTransaction();
-            $stmt = $con->prepare('INSERT INTO books (Book_title, Book_isbn, Book_publication_year, Book_edition, Book_publisher) VALUES (?, ?, ?, ?, ?)');
-            $stmt->execute([$Book_title, $Book_isbn, $Book_publication_year, $Book_edition, $Book_publisher]);
+            $stmt = $con->prepare('INSERT INTO books (book_title, book_isbn, book_publication_year, book_edition, book_publisher) VALUES (?, ?, ?, ?, ?)');
+            $stmt->execute([$book_title, $book_isbn, $book_publication_year, $book_edition, $book_publisher]);
             $book_id = $con->lastInsertId();
             $con->commit();
             return $book_id;
@@ -123,81 +123,108 @@ class database {
         }
     }
 
-        function insertBookCopy($Book_ID, $BC_STATUS) {
-            $con = $this->opencon();
-            try {
-                $con->beginTransaction();
-                $stmt = $con->prepare('INSERT INTO bookcopy (Book_ID, BC_STATUS) VALUES (?, ?)');
-                $stmt->execute([$Book_ID, $BC_STATUS]);
-                $copy_ID = $con->lastInsertId();
-                $con->commit();
-                return $copy_ID;
-            } catch (PDOException $e) {
-                if ($con->inTransaction()) {
-                    $con->rollBack();
-                }
-                throw $e;
+    function insertBookCopy($book_id, $bc_status) {
+        $con = $this->opencon();
+        try {
+            $con->beginTransaction();
+            $stmt = $con->prepare('INSERT INTO bookcopy (book_id, bc_status) VALUES (?, ?)');
+            $stmt->execute([$book_id, $bc_status]);
+            $copy_id = $con->lastInsertId();
+            $con->commit();
+            return $copy_id;
+        } catch (PDOException $e) {
+            if ($con->inTransaction()) {
+                $con->rollBack();
+            }
+            throw $e;
             }
         }
 
-        function insertBookAuthor($Book_ID, $Author_ID) {
-            $con = $this->opencon();
-            try {
-                $con->beginTransaction();
-                $stmt = $con->prepare('INSERT INTO bookauthors (Book_ID, Author_ID) VALUES (?, ?)');
-                $stmt->execute([$Book_ID, $Author_ID]);
-                $baba_ID = $con->lastInsertId();
-                $con->commit();
-                return $baba_ID;
-            } catch (PDOException $e) {
-                if ($con->inTransaction()) {
-                    $con->rollBack();
-                }
-                throw $e;
+    function insertBookAuthors($book_id, $author_id) {
+        $con = $this->opencon();
+        try {
+            $con->beginTransaction();
+            $stmt = $con->prepare('INSERT INTO bookauthors (book_id, author_id) VALUES (?, ?)');
+            $stmt->execute([$book_id, $author_id]);
+            $baba_id = $con->lastInsertId();
+            $con->commit();
+            return $baba_id;
+        } catch (PDOException $e) {
+            if ($con->inTransaction()) {
+                $con->rollBack();
+            }
+            throw $e;
             }
         }
 
-        function insertBookGenre($Genre_ID, $Book_ID) {
-            $con = $this->opencon();
-            try {
-                $con->beginTransaction();
-                $stmt = $con->prepare('INSERT INTO bookgenre (Genre_ID, Book_ID) VALUES (?, ?)');
-                $stmt->execute([$Genre_ID, $Book_ID]);
-                $gb_ID = $con->lastInsertId();
-                $con->commit();
-                return $gb_ID;
-            } catch (PDOException $e) {
-                if ($con->inTransaction()) {
-                    $con->rollBack();
-                }
-                throw $e;
+    function insertBookGenre($genre_id, $book_id) {
+        $con = $this->opencon();
+        try {
+            $con->beginTransaction();
+            $stmt = $con->prepare('INSERT INTO bookgenre (genre_id, book_id) VALUES (?, ?)');
+            $stmt->execute([$genre_id, $book_id]);
+            $gb_id = $con->lastInsertId();
+            $con->commit();
+            return $gb_id;
+        } catch (PDOException $e) {
+            if ($con->inTransaction()) {
+                $con->rollBack();
+            }
+            throw $e;
             }
         }
 
-        function viewAuthors() {
-            $con = $this->opencon();
-            return $con->query("SELECT * FROM authors")->fetchAll();
-        }
-
-        function viewGenre() {
-            $con = $this->opencon();
-            return $con->query("SELECT * FROM genres")->fetchAll();
-        }
-
-        function viewBooks() {
-            $con = $this->opencon();
-            return $con->query("SELECT books.Book_ID, books.Book_title, books.Book_isbn, books.Book_publication_year, books.Book_edition, books.Book_publisher, 
-        COUNT(bookcopy.Copy_ID) AS Copies, 
-        SUM(bookcopy.BC_STATUS = 'AVAILABLE') AS Available_Copies 
-        FROM books 
-        LEFT JOIN bookcopy ON books.Book_ID = bookcopy.Book_ID 
-        GROUP BY books.Book_ID")->fetchAll();
+    function viewAuthors() {
+        $con = $this->opencon();
+        return $con->query("SELECT * FROM authors")->fetchAll();
     }
+
+    function viewGenre() {
+        $con = $this->opencon();
+        return $con->query("SELECT * FROM genres")->fetchAll();
+    }
+
+    function viewBooks() {
+        $con = $this->opencon();
+        return $con->query("SELECT books.book_id, books.book_title, books.book_isbn, books.book_publication_year, books.book_edition, books.book_publisher, 
+        
+        COUNT(bookcopy.copy_id) AS copies, 
+        SUM(bookcopy.bc_status = 'AVAILABLE') AS available_copies 
+        FROM books 
+        LEFT JOIN bookcopy ON books.book_id = bookcopy.book_id 
+        GROUP BY books.book_id")->fetchAll();
+    }
+
+    function updateBook($book_id, $book_title, $book_isbn, $book_publication_year, $book_edition, $book_publisher) {
+        $con = $this->opencon();
+        try {
+            $con->beginTransaction();
+            $stmt = $con->prepare('UPDATE books SET book_title = ?, book_isbn = ?, book_publication_year = ?, book_edition = ?, book_publisher = ? WHERE book_id = ?');
+            $stmt->execute([$book_title, $book_isbn, $book_publication_year, $book_edition, $book_publisher, $book_id]);
+            $con->commit();
+            return true;
+        } catch (PDOException $e) {
+            if ($con->inTransaction()) {
+                $con->rollBack();
+            }
+            throw $e;
+        }
+    }
+    function countBook(){
+        $con = $this->opencon();
+        return $con->query("SELECT COUNT(*) AS total_books FROM Books")->fetchColumn();
+    }
+
+    function countCopy(){
+        $con = $this->opencon();
+        return $con->query("SELECT COUNT(*) AS total_copies FROM Bookcopy")->fetchColumn();
+    }
+
+}
 
 
 
 
     //For Admin Dashboard
         
-}
 ?>

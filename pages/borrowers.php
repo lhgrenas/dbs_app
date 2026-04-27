@@ -12,19 +12,19 @@ $borrowerCreateStatus = null;
 $borrowerCreateMessage = '';
 
 if(isset($_POST['add_borrower'])) {
-    $Borrower_firstname = $_POST['borrower_firstname'];
-    $Borrower_lastname = $_POST['borrower_lastname'];
-    $Borrower_email = $_POST['borrower_email'];
-    $Borrower_phone_number = $_POST['borrower_phone_number'];
-    $Borrower_member_since = $_POST['borrower_member_since'];
-    $Is_active = $_POST['is_active'];
+    $borrower_firstname = $_POST['borrower_firstname'];
+    $borrower_lastname = $_POST['borrower_lastname'];
+    $borrower_email = $_POST['borrower_email'];
+    $borrower_phone_number = $_POST['borrower_phone_number'];
+    $borrower_member_since = $_POST['borrower_member_since'];
+    $is_active = $_POST['is_active'];
     $temp_password = $_POST['temp_password'];
 
     $User_password_hash = password_hash($temp_password, PASSWORD_DEFAULT);
     try {
-        $User_ID = $con->insertUser($Borrower_email, $User_password_hash, $Is_active);
-        $Borrower_ID = $con->insertBorrowers($Borrower_firstname, $Borrower_lastname, $Borrower_email, $Borrower_phone_number, $Borrower_member_since, $Is_active);
-        $con->insertBorroweruser($Borrower_ID, $User_ID);
+        $User_id = $con->insertUser($borrower_email, $user_password_hash, $is_active);
+        $borrower_id = $con->insertBorrowers($borrower_firstname, $borrower_lastname, $borrower_email, $borrower_phone_number, $borrower_member_since, $is_active);
+        $con->insertBorroweruser($borrower_id, $user_id);
 
         $borrowerCreateStatus = 'success';
         $borrowerCreateMessage = 'Borrower created Succesfully';
@@ -35,18 +35,18 @@ if(isset($_POST['add_borrower'])) {
 }
 
 if(isset($_POST['add_address'])) {
-  $Borrower_ID = $_POST['borrower_id'];
-  $Ba_house_number = $_POST['ba_house_number'];
-  $Ba_street = $_POST['ba_street'];
-  $Ba_barangay = $_POST['ba_barangay'];
-  $Ba_city = $_POST['ba_city'];
-  $Ba_province = $_POST['ba_province'];
-  $Ba_postal_code = $_POST['ba_postal_code'];
-  $Is_primary = isset($_POST['is_primary']) ? $_POST['is_primary'] : 0;
-  $Ba_country = 'Philippines';
+  $borrower_id = $_POST['borrower_id'];
+  $ba_house_number = $_POST['ba_house_number'];
+  $ba_street = $_POST['ba_street'];
+  $ba_barangay = $_POST['ba_barangay'];
+  $ba_city = $_POST['ba_city'];
+  $ba_province = $_POST['ba_province'];
+  $ba_postal_code = $_POST['ba_postal_code'];
+  $is_primary = isset($_POST['is_primary']) ? $_POST['is_primary'] : 0;
+  $ba_country = 'Philippines';
 
   try {
-    $borroweraddrress = $con->insertBorrowerAddress($Borrower_ID, $Ba_house_number, $Ba_street, $Ba_barangay, $Ba_city, $Ba_province, $Ba_postal_code, $Ba_country, $Is_primary);
+    $borroweraddrress = $con->insertBorrowerAddress($borrower_id, $ba_house_number, $ba_street, $ba_barangay, $ba_city, $ba_province, $ba_postal_code, $ba_country, $is_primary);
 
     $addressCreateStatus = 'success';
     $addressCreateMessage = 'Address added successfully.';
@@ -125,7 +125,7 @@ if(isset($_POST['add_address'])) {
             $viewBorrowers = $con->viewBorrowers();
             foreach($viewBorrowers as $vw){
               echo '<tr>';
-              echo '<td>'.$vw['Borrower_ID']. '</td>';
+              echo '<td>'.$vw['Borrower_id']. '</td>';
               echo '<td>'.$vw['Borrower_firstname']. ' '.$vw['Borrower_lastname'].'</td>';
               echo '<td>'.(isset($vw['Borrower_email']) ? $vw['Borrower_email'] : ''). '</td>';
               echo '<td>'.($vw['Borrower_active'] == 1 
@@ -220,7 +220,7 @@ if(isset($_POST['add_address'])) {
                   <option value="">Select borrower</option>
                   <?php
                   foreach($allusers as $borrowers){
-                    echo '<option value="'.$borrowers['Borrower_ID'] .'"> '.'['.$borrowers['Borrower_ID'].'] ' .$borrowers['Borrower_firstname']. ' '.$borrowers['Borrower_lastname']. '</option>';
+                    echo '<option value="'.$borrowers['Borrower_id'] .'"> '.'['.$borrowers['Borrower_id'].'] ' .$borrowers['Borrower_firstname']. ' '.$borrowers['Borrower_lastname']. '</option>';
                     }
                   ?>
                 </select>

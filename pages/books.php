@@ -21,13 +21,13 @@ $genreCreateStatus = null;
 $genreCreateMessage = '';
 
 if(isset($_POST['add_book'])) {
-  $Book_title = $_POST['book_title'];
-  $Book_isbn = $_POST['book_isbn'];
-  $Book_publication_year = $_POST['book_publication_year'];
-  $Book_edition = $_POST['book_edition'];
-  $Book_publisher = $_POST['book_publisher'];
+  $book_title = $_POST['book_title'];
+  $book_isbn = $_POST['book_isbn'];
+  $book_publication_year = $_POST['book_publication_year'];
+  $book_edition = $_POST['book_edition'];
+  $book_publisher = $_POST['book_publisher'];
   try {
-    $con->insertBook($Book_title, $Book_isbn, $Book_publication_year, $Book_edition, $Book_publisher);
+    $con->insertBook($book_title, $book_isbn, $book_publication_year, $book_edition, $book_publisher);
     $bookCreateStatus = 'success';
     $bookCreateMessage = 'Book created successfully.';
   } catch(Exception $e) {
@@ -53,7 +53,7 @@ if(isset($_POST['assign_author'])) {
   $book_id = $_POST['book_id'];
   $author_id = $_POST['author_id'];
   try {
-    $con->insertBookAuthor($book_id, $author_id);
+    $con->insertBookAuthors($book_id, $author_id);
     $assignCreateStatus = 'success';
     $assignCreateMessage = 'Author assigned successfully.';
   } catch(Exception $e) {
@@ -73,6 +73,28 @@ if(isset($_POST['assign_genre'])) {
     $genreCreateStatus = 'error';
     $genreCreateMessage = 'Error assigning genre.';
   }
+}
+
+if(isset($_POST['update_book'])){
+  $book_id = $_POST['book_id'];
+  $book_title = $_POST['book_title'];
+  $book_isbn = $_POST['book_isbn'];
+  $book_publication_year = $_POST['book_publication_year'];
+  $book_edition = $_POST['book_edition'];
+  $book_publisher = $_POST['book_publisher'];
+
+  try {
+        $con->updateBook(
+            $book_id,
+            $book_title,
+            $book_isbn,
+            $book_publication_year,
+            $book_edition,
+            $book_publisher
+        );
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+    }
 }
 
 ?>
@@ -125,10 +147,11 @@ if(isset($_POST['assign_genre'])) {
           <div class="mb-3">
             <label class="form-label">Title</label>
             <input class="form-control" name="book_title" required>
+
           </div>
           <div class="mb-3">
             <label class="form-label">ISBN</label>
-            <input class="form-control" name="book_isbn" placeholder="optional">
+            <input class="form-control" name="book_isbn"placeholder="optional">
           </div>
           <div class="mb-3">
             <label class="form-label">Publication Year</label>
@@ -156,7 +179,7 @@ if(isset($_POST['assign_genre'])) {
             <select class="form-select" name="book_id" required>
               <option value="">Select book</option>
               <?php foreach($allbooks as $books){
-                echo '<option value="'.$books['Book_ID'].'">['.$books['Book_ID'].'] '.$books['Book_title'].'</option>';
+                echo '<option value="'.$books['book_id'].'">['.$books['book_id'].'] '.$books['book_title'].'</option>';
               } ?>
             </select>
           </div>
@@ -206,20 +229,29 @@ if(isset($_POST['assign_genre'])) {
             <?php
 
             $viewCopies = $con->viewBooks();
-            foreach($viewCopies as $vw){
+            foreach($viewCopies as $book){
 
             echo '<tr>';
-            echo '<td>'.$vw['Book_ID']. '</td>';
-            echo '<td>'.$vw['Book_title']. '</td>';
-            echo '<td>'.$vw['Book_isbn']. '</td>';
-            echo '<td>'.$vw['Book_publication_year']. '</td>';
-            echo '<td>'.$vw['Book_publisher']. '</td>';
-            echo '<td><span class="badge bg-primary">'.$vw['Copies'].'</span></td>';
-            echo '<td><span class="badge bg-success">'.$vw['Available_Copies'].'</span></td>';
+            echo '<td>' . $book['book_id'] . '</td>';
+            echo '<td>' . $book['book_title'] . '</td>';
+            echo '<td>' . $book['book_isbn'] . '</td>';
+            echo '<td>' . $book['book_publication_year'] . '</td>';
+            echo '<td>' . $book['book_publisher'] . '</td>';
+            echo '<td><span class="badge bg-primary">' . $book['copies'] . '</span></td>';
+            echo '<td><span class="badge bg-success">' . $book['available_copies'] . '</span></td>';
             echo '<td class="text-end">';
-            echo '<button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editBookModal">Edit</button>';
-            echo' <button class="btn btn-sm btn-outline-danger">Delete</button>';
-                
+
+            echo '<button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editBookModal" 
+            data-book-id="' . $book['book_id'] . '"
+            data-book-title="' . $book['book_title'] . '"
+            data-book-isbn="' . $book['book_isbn'] . '"
+            data-book-year="' . $book['book_publication_year'] . '"
+            data-book-edition="' . $book['book_edition'] . '"
+            data-book-publisher="' . $book['book_publisher'] . '"
+            >Edit</button>';
+
+            echo ' <button type="button" class="btn btn-sm btn-outline-danger">Delete</button>';
+            echo '</div>';
             echo ' </td>';
             echo ' </tr>';
             
@@ -242,7 +274,7 @@ if(isset($_POST['assign_genre'])) {
                   <select class="form-select" name="book_id" required>
                     <option value="">Select book</option>
                     <?php foreach($allbooks as $books){
-                      echo '<option value="'.$books['Book_ID'].'">['.$books['Book_ID'].'] '.$books['Book_title'].'</option>';
+                      echo '<option value="'.$books['book_id'].'">['.$books['book_id'].'] '.$books['book_title'].'</option>';
                     } ?>
                   </select>
                 </div>
@@ -250,7 +282,7 @@ if(isset($_POST['assign_genre'])) {
                   <select class="form-select" name="author_id" required>
                     <option value="">Select author</option>
                     <?php foreach($bookauthor as $authors){
-                      echo '<option value="'.$authors['Author_ID'].'">['.$authors['Author_ID'].'] '.$authors['Author_firstname'].' '.$authors['Author_lastname'].'</option>';
+                      echo '<option value="'.$authors['author_id'].'">['.$authors['author_id'].'] '.$authors['author_firstname'].' '.$authors['author_lastname'].'</option>';
                     } ?>
                   </select>
                 </div>
@@ -272,7 +304,7 @@ if(isset($_POST['assign_genre'])) {
                   <select class="form-select" name="book_id" required>
                     <option value="">Select book</option>
                     <?php foreach($allbooks as $books){
-                      echo '<option value="'.$books['Book_ID'].'">['.$books['Book_ID'].'] '.$books['Book_title'].'</option>';
+                      echo '<option value="'.$books['book_id'].'">['.$books['book_id'].'] '.$books['book_title'].'</option>';
                     } ?>
                   </select>
                 </div>
@@ -280,7 +312,7 @@ if(isset($_POST['assign_genre'])) {
                   <select class="form-select" name="genre_id" required>
                     <option value="">Select genre</option>
                     <?php foreach($listedGenre as $genres){
-                      echo '<option value="'.$genres['Genre_ID'].'">['.$genres['Genre_ID'].'] '.$genres['Genre_Name'].'</option>';
+                      echo '<option value="'.$genres['genre_id'].'">['.$genres['genre_id'].'] '.$genres['genre_name'].'</option>';
                     } ?>
                   </select>
                 </div>
@@ -309,19 +341,29 @@ if(isset($_POST['assign_genre'])) {
       <div class="modal-body">
         <!-- Later in PHP: load existing values -->
         <form action="#" method="POST">
+          <!-- put readonly if want to unhide to avoid bookid being edited -->
+          <input type="hidden" name="book_id" id="edit_book_id" >
           <div class="mb-3">
             <label class="form-label">Title</label>
-            <input class="form-control" value="Noli Me Tangere">
+            <input class="form-control" id="edit_book_title" name="book_title" required>
           </div>
           <div class="mb-3">
             <label class="form-label">ISBN</label>
-            <input class="form-control" value="9789710810736">
+            <input class="form-control" id="edit_book_isbn" name="book_isbn">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Publication Year</label>
+            <input class="form-control" id="edit_book_year" name="book_publication_year" type="number" min="1500" max="2100">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Edition</label>
+            <input class="form-control" id="edit_book_edition" name="book_edition">
           </div>
           <div class="mb-3">
             <label class="form-label">Publisher</label>
-            <input class="form-control" value="National Book Store">
+            <input class="form-control" id="edit_book_publisher" name="book_publisher">
           </div>
-          <button class="btn btn-primary w-100" type="button">Save Changes</button>
+          <button name="update_book" class="btn btn-primary w-100" type="submit">Save Changes</button>
         </form>
       </div>
     </div>
@@ -330,6 +372,20 @@ if(isset($_POST['assign_genre'])) {
 
 <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="../sweetalert/dist/sweetalert2.js"></script>
+<script>
+  const editBookModal = document.getElementById('editBookModal');
+  editBookModal.addEventListener('show.bs.modal', function(event) {
+    const btn = event.relatedTarget;
+    if(!btn) return;
+    document.getElementById('edit_book_id').value = btn.getAttribute('data-book-id');
+    document.getElementById('edit_book_title').value = btn.getAttribute('data-book-title');
+    document.getElementById('edit_book_isbn').value = btn.getAttribute('data-book-isbn');
+    document.getElementById('edit_book_year').value = btn.getAttribute('data-book-year');
+    document.getElementById('edit_book_edition').value = btn.getAttribute('data-book-edition');
+    document.getElementById('edit_book_publisher').value = btn.getAttribute('data-book-publisher');
+  });
+</script>
+
 <script>
   const bookCreateStatus = <?php echo json_encode($bookCreateStatus)?>;
   const bookCreateMessage = <?php echo json_encode($bookCreateMessage)?>;
@@ -404,5 +460,5 @@ if(isset($_POST['assign_genre'])) {
     });
   }
 </script>
-  </body>
+</body>
 </html>
