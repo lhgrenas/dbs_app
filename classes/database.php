@@ -194,6 +194,37 @@ class database {
         LEFT JOIN bookcopy ON books.book_id = bookcopy.book_id 
         GROUP BY books.book_id")->fetchAll();
     }
+    function  recentLoans() {
+    $con = $this->opencon();
+    $result = $con->query("
+        SELECT 
+            loan.loan_id, 
+            CONCAT(b.borrower_firstname, ' ', b.borrower_lastname) AS borrower, 
+            loan.loan_status AS loan_status, 
+            loan.loan_date, 
+            users.username AS processed_by_user 
+        FROM loan 
+        LEFT JOIN borrowers b ON loan.borrower_id = b.borrower_id 
+        LEFT JOIN users users ON loan.processed_by_user_id = users.user_id
+        ORDER BY loan.Loan_date DESC 
+    ");
+
+    return $result ? $result->fetchAll() : [];
+    }
+    // function viewLoans() {
+    //     $con = $this->opencon();
+    //     return $con->query("SELECT 
+    //     loan.loan_id, 
+    //     CONCAT(borrowers.borrower_firstname,' ',borrowers.borrowerrs_lastname) AS Borrower,
+    //     loan.loan_status,
+    //     DATE(loan.loan_date) AS loan_date,
+    //     users.username
+    //     FROM 
+    //     loan
+    //     JOIN borrowers ON loan.borrowers_id = borrowers.borrower_id
+    //     JOIN users ON loan.processed_by_user_id = users.user_id")
+    //     ->fetchAll();
+    // }
 
     function updateBook($book_id, $book_title, $book_isbn, $book_publication_year, $book_edition, $book_publisher) {
         $con = $this->opencon();

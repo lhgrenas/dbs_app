@@ -100,27 +100,24 @@ $con = new database();
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>1004</td>
-                <td>Ana Bautista</td>
-                <td><span class="badge text-bg-warning">OPEN</span></td>
-                <td>2026-02-15</td>
-                <td>admin.library@samplemail.com</td>
-              </tr>
-              <tr>
-                <td>1003</td>
-                <td>Mark Reyes</td>
-                <td><span class="badge text-bg-warning">OPEN</span></td>
-                <td>2026-01-10</td>
-                <td>admin.library@samplemail.com</td>
-              </tr>
-              <tr>
-                <td>1002</td>
-                <td>Maria Santos</td>
-                <td><span class="badge text-bg-success">CLOSED</span></td>
-                <td>2025-12-12</td>
-                <td>admin.library@samplemail.com</td>
-              </tr>
+              <?php
+                  $recentLoans = $con->recentLoans();
+                  foreach($recentLoans as $rl){
+
+                  echo '<tr>';
+                  echo '<td>'.$rl['loan_id']. '</td>';
+                  echo '<td>'.$rl['borrower']. '</td>';
+                  echo '<td>'.(isset($rl['loan_status']) ? ($rl['loan_status'] == 'Open' 
+                    ? '<span class="badge text-bg-success">Open</span>' 
+                    : '<span class="badge text-bg-danger">Close</span>'): ''). '</td>';
+                  echo '<td>'.$rl['loan_date']. '</td>';
+                  echo '<td>'.$rl['processed_by_user']. '</td>';
+                  echo '</tr>';
+
+                  }
+
+              ?>
+            
             </tbody>
           </table>
         </div>
