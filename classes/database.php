@@ -269,12 +269,12 @@ class database {
     }
     function countBook(){
         $con = $this->opencon();
-        return $con->query("SELECT COUNT(*) AS total_books FROM Books")->fetchColumn();
+        return $con->query("SELECT COUNT(*) AS total_books FROM books")->fetchColumn();
     }
 
     function countCopy(){
         $con = $this->opencon();
-        return $con->query("SELECT COUNT(*) AS total_copies FROM Bookcopy")->fetchColumn();
+        return $con->query("SELECT COUNT(*) AS total_copies FROM bookcopy")->fetchColumn();
     }
 
     function deleteBooks($book_id){
@@ -282,16 +282,16 @@ class database {
         try{
             $con->beginTransaction();
 
-            $stmtCopies = $con->prepare("DELETE FROM Bookcopy WHERE book_id = ?");
+            $stmtCopies = $con->prepare('DELETE FROM bookcopy WHERE book_id = ?');
             $stmtCopies->execute([$book_id]);
             
-            $stmtBG = $con->prepare("DELETE FROM bookgenre WHERE book_id = ?");
+            $stmtBG = $con->prepare('DELETE FROM bookgenre WHERE book_id = ?');
             $stmtBG->execute([$book_id]);
 
-            $stmtBA = $con->prepare("DELETE FROM bookauthors WHERE book_id = ?");
+            $stmtBA = $con->prepare('DELETE FROM bookauthors WHERE book_id = ?');
             $stmtBA->execute([$book_id]);
 
-            $stmtBook = $con->prepare("DELETE FROM Books WHERE book_id = ?");
+            $stmtBook = $con->prepare('DELETE FROM Books WHERE book_id = ?');
             $stmtBook->execute([$book_id]);
 
             $con->commit();

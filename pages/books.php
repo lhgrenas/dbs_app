@@ -1,6 +1,7 @@
 <?php
 require_once('../classes/database.php');
  
+session_start();
 
 $con = new database();
 
@@ -99,10 +100,13 @@ if(isset($_POST['update_book'])){
 
 if(isset($_POST['delete_books'])){
   $book_id = $_POST['book_id'];
+  $book_title = $_POST['book_title'];
+  $_SESSION['book_title'] = $book_title;
   
   try{
     $con->deleteBooks($book_id);
-    header('Location:books.php');
+    $_SESSION['success_message'] = $book_title . ' has been deleted in the database';
+    header('Location: books.php');
     exit();
   }catch(Exception $e){
     $error_message = "Cannot delete this book. It may have active loans or copies in use.";
@@ -159,6 +163,17 @@ if(isset($_POST['delete_books'])){
   </button>
 </div>
 <?php } ?>
+
+<?php if(isset($_SESSION['success_message'])){ ?>
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+  <strong>Success!</strong> <?php echo $_SESSION['success_message']; ?>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+   
+  </button>
+</div>
+<?php
+  unset($_SESSION['success_message']);
+} ?>
 
   <div class="row g-3">
     <div class="col-12 col-lg-4">
@@ -265,7 +280,7 @@ if(isset($_POST['delete_books'])){
             echo '<td><span class="badge bg-success">' . $book['available_copies'] . '</span></td>';
             echo '<td class="text-end">';
 
-            echo '<button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editBookModal" 
+            echo '<button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editBookModal" 
             data-book-id="' . $book['book_id'] . '"
             data-book-title="' . $book['book_title'] . '"
             data-book-isbn="' . $book['book_isbn'] . '"
@@ -274,7 +289,7 @@ if(isset($_POST['delete_books'])){
             data-book-publisher="' . $book['book_publisher'] . '"
             >Edit</button>';
 
-            echo ' <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteBookModal"
+            echo ' <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteBookModal"
             data-book-id="' . $book['book_id'] . '"
             data-book-title="' . $book['book_title'] . '"
             >Delete</button>';
@@ -410,9 +425,10 @@ if(isset($_POST['delete_books'])){
         <p class="text-danger small">This action cannot be undone.</p>
         <form action="#" method="POST">
           <input type="hidden" name="book_id" id="delete_book_id">
+          <input type="hidden" name="book_title" id="delete_book_titles">
             <div class="d-flex gap-2 justify-content-end">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="button" class="btn btn-danger" name="delete_books">Delete</button>
+              <button type="submit" class="btn btn-danger" name="delete_books">Delete</button>
             </div>
         </form>
       </div>
@@ -519,6 +535,7 @@ if(isset($_POST['delete_books'])){
     if(!btn) return;
 
     document.getElementById('delete_book_id').value = btn.getAttribute('data-book-id');
+    document.getElementById('delete_book_titles').value = btn.getAttribute('data-book-title');
     document.getElementById('delete_book_title').textContent = btn.getAttribute('data-book-title');
 
   });
