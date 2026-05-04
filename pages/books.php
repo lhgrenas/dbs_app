@@ -102,10 +102,10 @@ if(isset($_POST['delete_books'])){
   
   try{
     $con->deleteBooks($book_id);
-    header('Location: books.php');
+    header('Location:books.php');
     exit();
   }catch(Exception $e){
-    $error_message = $e->getMessage();
+    $error_message = "Cannot delete this book. It may have active loans or copies in use.";
   }
 
 }
@@ -120,7 +120,7 @@ if(isset($_POST['delete_books'])){
   <title>Books — Admin</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="../assets/css/style.css">
-  <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
+  <link rel="stylesheet" href="../bootstrap/css/bootstrap.css">
   <link rel="stylesheet" href="../sweetalert/dist/sweetalert2.css">
 
 </head>
@@ -151,7 +151,15 @@ if(isset($_POST['delete_books'])){
 
 <main class="container py-4">
 
-<?php echo $error_message; ?>
+<?php if(isset($error_message)){ ?>
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <strong>Error</strong> <?php echo $error_message; ?>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+   
+  </button>
+</div>
+<?php } ?>
+
   <div class="row g-3">
     <div class="col-12 col-lg-4">
       <div class="card p-4">
@@ -401,20 +409,18 @@ if(isset($_POST['delete_books'])){
         <p>Are you sure you want to delete <strong id="delete_book_title">?</strong></p>
         <p class="text-danger small">This action cannot be undone.</p>
         <form action="#" method="POST">
-            <input type="hidden" name="book_id" id="delete_book_id">
+          <input type="hidden" name="book_id" id="delete_book_id">
             <div class="d-flex gap-2 justify-content-end">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-              >Cancel</button>
-              <button type="button" class="btn btn-danger" name="delete_books"
-              >Delete</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-danger" name="delete_books">Delete</button>
             </div>
-          </form>
+        </form>
       </div>
     </div>
   </div>
 </div>
 
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="../sweetalert/dist/sweetalert2.js"></script>
 <script>
@@ -509,14 +515,13 @@ if(isset($_POST['delete_books'])){
   const deleteBookModal = document.getElementById('deleteBookModal');
   deleteBookModal.addEventListener('show.bs.modal', function(event){
 
-  const btn = event.relatedTarget;
-  if(!btn) return;
+    const btn = event.relatedTarget;
+    if(!btn) return;
 
-  document.getElementById('delete_book_id').value = btn.getAttribute('data-book-id') || '';
-  document.getElementById('delete_book_title').textContent = btn.getAttribute('data-book-title') || '';
+    document.getElementById('delete_book_id').value = btn.getAttribute('data-book-id');
+    document.getElementById('delete_book_title').textContent = btn.getAttribute('data-book-title');
 
-  }
-  )
+  });
   
 </script>
 </body>
