@@ -97,6 +97,19 @@ if(isset($_POST['update_book'])){
     }
 }
 
+if(isset($_POST[''])){
+  $book_id = $_POST['book_id'];
+  
+  try{
+    $con->deleteBooks($book_id);
+    header('Location: books.php');
+    exit();
+  }catch(Exception $e){
+    echo $e->getMessage();
+  }
+
+}
+
 ?>
 
 <!doctype html>

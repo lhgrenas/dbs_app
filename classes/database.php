@@ -277,8 +277,28 @@ class database {
         return $con->query("SELECT COUNT(*) AS total_copies FROM Bookcopy")->fetchColumn();
     }
 
-}
+    function deleteBooks($book_id){
+        $con = $this->opencon();
+        try{
+            $con->beginTransaction();
+            $stmtCopies = $con->prepare("DELETE FROM Bookcopy WHERE book_id = ?");
+            $stmtCopies->execute([$book_id]);
 
+            $stmtBook = $con->prepare("DELETE FROM Books WHERE book_id = ?");
+            $stmtBook->execute([$book_id]);
+
+            $con->commit();
+            return true;
+        }catch (PDOException $e) {
+            if ($con->inTransaction()) {
+                $con->rollBack();
+            }
+            throw $e;
+
+        }
+    }
+
+}
 
     //For Admin Dashboard
         
