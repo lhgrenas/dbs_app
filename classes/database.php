@@ -281,8 +281,15 @@ class database {
         $con = $this->opencon();
         try{
             $con->beginTransaction();
+
             $stmtCopies = $con->prepare("DELETE FROM Bookcopy WHERE book_id = ?");
             $stmtCopies->execute([$book_id]);
+            
+            $stmtBG = $con->prepare("DELETE FROM bookgenre WHERE book_id = ?");
+            $stmtBG->execute([$book_id]);
+
+            $stmtBA = $con->prepare("DELETE FROM bookauthors WHERE book_id = ?");
+            $stmtBA->execute([$book_id]);
 
             $stmtBook = $con->prepare("DELETE FROM Books WHERE book_id = ?");
             $stmtBook->execute([$book_id]);
@@ -294,7 +301,6 @@ class database {
                 $con->rollBack();
             }
             throw $e;
-
         }
     }
 

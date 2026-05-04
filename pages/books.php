@@ -97,7 +97,7 @@ if(isset($_POST['update_book'])){
     }
 }
 
-if(isset($_POST[''])){
+if(isset($_POST['delete_books'])){
   $book_id = $_POST['book_id'];
   
   try{
@@ -105,7 +105,7 @@ if(isset($_POST[''])){
     header('Location: books.php');
     exit();
   }catch(Exception $e){
-    echo $e->getMessage();
+    $error_message = $e->getMessage();
   }
 
 }
@@ -150,6 +150,8 @@ if(isset($_POST[''])){
 </nav>
 
 <main class="container py-4">
+
+
   <div class="row g-3">
     <div class="col-12 col-lg-4">
       <div class="card p-4">
@@ -267,10 +269,6 @@ if(isset($_POST[''])){
             echo ' <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteBookModal"
             data-book-id="' . $book['book_id'] . '"
             data-book-title="' . $book['book_title'] . '"
-            data-book-isbn="' . $book['book_isbn'] . '"
-            data-book-year="' . $book['book_publication_year'] . '"
-            data-book-edition="' . $book['book_edition'] . '"
-            data-book-publisher="' . $book['book_publisher'] . '"
             >Delete</button>';
             echo '</div>';
             echo ' </td>';
@@ -391,6 +389,7 @@ if(isset($_POST[''])){
   </div>
 </div>
 
+<!-- Delete Book Modal -->
 <div class="modal fade" id="deleteBookModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -402,13 +401,13 @@ if(isset($_POST[''])){
         <p>Are you sure you want to delete <strong id="delete_book_title">?</strong></p>
         <p class="text-danger small">This action cannot be undone.</p>
         <form action="#" method="POST">
-          <input type="hidden" name="book_id" id="delete_book_id">
-          <div class="d-flex gap-2 justify-content-end">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-            >Cancel</button>
-            <button type="button" class="btn btn-danger" name="delete_books"
-            >Delete</button>
-          </div>
+            <input type="hidden" name="book_id" id="delete_book_id">
+            <div class="d-flex gap-2 justify-content-end">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+              >Cancel</button>
+              <button type="button" class="btn btn-danger" name="delete_books"
+              >Delete</button>
+            </div>
           </form>
       </div>
     </div>
