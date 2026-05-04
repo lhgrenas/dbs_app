@@ -151,7 +151,7 @@ if(isset($_POST['delete_books'])){
 
 <main class="container py-4">
 
-
+<?php echo $error_message; ?>
   <div class="row g-3">
     <div class="col-12 col-lg-4">
       <div class="card p-4">
@@ -507,7 +507,7 @@ if(isset($_POST['delete_books'])){
 </script>
 <script>
   const deleteBookModal = document.getElementById('deleteBookModal');
-  deleteBookModal.addEventListener('show.bs.modal',function(event){
+  deleteBookModal.addEventListener('show.bs.modal', function(event){
 
   const btn = event.relatedTarget;
   if(!btn) return;
