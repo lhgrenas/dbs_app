@@ -209,7 +209,7 @@ class database {
         }
     }
 
-    //Authors
+    
     function viewAuthors() {
         $con = $this->opencon();
         return $con->query("SELECT * FROM authors")->fetchAll();

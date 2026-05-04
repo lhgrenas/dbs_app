@@ -251,7 +251,14 @@ if(isset($_POST['update_book'])){
             data-book-publisher="' . $book['book_publisher'] . '"
             >Edit</button>';
 
-            echo ' <button type="button" class="btn btn-sm btn-outline-danger">Delete</button>';
+            echo ' <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteBookModal"
+            data-book-id="' . $book['book_id'] . '"
+            data-book-title="' . $book['book_title'] . '"
+            data-book-isbn="' . $book['book_isbn'] . '"
+            data-book-year="' . $book['book_publication_year'] . '"
+            data-book-edition="' . $book['book_edition'] . '"
+            data-book-publisher="' . $book['book_publisher'] . '"
+            >Delete</button>';
             echo '</div>';
             echo ' </td>';
             echo ' </tr>';
@@ -371,6 +378,31 @@ if(isset($_POST['update_book'])){
   </div>
 </div>
 
+<div class="modal fade" id="deleteBookModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete Book</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete <strong id="delete_book_title">?</strong></p>
+        <p class="text-danger small">This action cannot be undone.</p>
+        <form action="#" method="POST">
+          <input type="hidden" name="book_id" id="delete_book_id">
+          <div class="d-flex gap-2 justify-content-end">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+            >Cancel</button>
+            <button type="button" class="btn btn-danger" name="delete_books"
+            >Delete</button>
+          </div>
+          </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="../sweetalert/dist/sweetalert2.js"></script>
 <script>
@@ -460,6 +492,20 @@ if(isset($_POST['update_book'])){
       confirmButtonText: 'OK'
     });
   }
+</script>
+<script>
+  const deleteBookModal = document.getElementById('deleteBookModal');
+  deleteBookModal.addEventListener('show.bs.modal',function(event){
+
+  const btn = event.relatedTarget;
+  if(!btn) return;
+
+  document.getElementById('delete_book_id').value = btn.getAttribute('data-book-id') || '';
+  document.getElementById('delete_book_title').textContent = btn.getAttribute('data-book-title') || '';
+
+  }
+  )
+  
 </script>
 </body>
 </html>
