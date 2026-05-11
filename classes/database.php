@@ -260,7 +260,7 @@ class database {
             $con->commit();
             return true;
         } catch (PDOException $e) {
-            if ($con->inTransaction()) {
+            if($con->inTransaction()) {
                 $con->rollBack();
             }
             throw $e;
@@ -275,8 +275,8 @@ class database {
             $stmt->execute([$author_firstname, $author_lastname, $author_birth_year, $author_nationality, $author_id]);
             $con->commit();
             return true;
-        }catch (PDOException $e) {
-            if ($con->inTransaction()){
+        } catch (PDOException $e) {
+            if($con->inTransaction()) {
                 $con->rollBack();
             }
             throw $e;
@@ -291,8 +291,8 @@ class database {
             $stmt->execute([$genre_name, $genre_id]);
             $con->commit();
             return true;
-        }catch (PDOException $e) {
-            if ($con->inTransaction()){
+        } catch (PDOException $e) {
+            if($con->inTransaction()) {
                 $con->rollBack();
             }
             throw $e;

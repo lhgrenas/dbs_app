@@ -5,8 +5,6 @@
   
   $con = new database();
 
-  // $authors = $con->insertAuthors();
-
   $viewAuthors = $con->viewAuthors();
   $viewGenre = $con->viewGenre();
 
