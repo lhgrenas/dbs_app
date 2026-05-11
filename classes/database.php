@@ -208,7 +208,6 @@ class database {
             throw $e;
         }
     }
-
     
     function viewAuthors() {
         $con = $this->opencon();
@@ -267,6 +266,39 @@ class database {
             throw $e;
         }
     }
+
+    function updateAuthor($author_id, $author_firstname, $author_lastname, $author_birth_year, $author_nationality){
+        $con = $this->opencon();
+        try{
+            $con->beginTransaction();
+            $stmt = $con->prepare('UPDATE authors SET author_firstname = ?, author_lastname = ?, author_birth_year = ?, author_nationality = ? WHERE author_id = ?');
+            $stmt->execute([$author_firstname, $author_lastname, $author_birth_year, $author_nationality, $author_id]);
+            $con->commit();
+            return true;
+        }catch (PDOException $e) {
+            if ($con->inTransaction()){
+                $con->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    function updateGenre($genre_id, $genre_name){
+        $con = $this->opencon();
+        try{
+            $con->beginTransaction();
+            $stmt = $con->prepare('UPDATE genres SET genre_name = ? WHERE genre_id = ?');
+            $stmt->execute([$genre_name, $genre_id]);
+            $con->commit();
+            return true;
+        }catch (PDOException $e) {
+            if ($con->inTransaction()){
+                $con->rollBack();
+            }
+            throw $e;
+        }
+    }
+
     function countBook(){
         $con = $this->opencon();
         return $con->query("SELECT COUNT(*) AS total_books FROM books")->fetchColumn();
@@ -304,8 +336,49 @@ class database {
         }
     }
 
+    function deleteAuthor($author_id){
+        $con = $this->opencon();
+        try{
+            $con->beginTransaction();
+
+            $stmtBAs = $con->prepare('DELETE FROM bookauthors WHERE author_id = ?');
+            $stmtBAs->execute([$author_id]);
+
+            $stmtAuthor = $con->prepare('DELETE FROM authors WHERE author_id = ?');
+            $stmtAuthor->execute([$author_id]);
+
+            $con->commit();
+            return true;
+        }catch (PDOException $e) {
+            if ($con->inTransaction()) {
+                $con->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    function deleteGenre($genre_id){
+        $con = $this->opencon();
+        try{
+            $con->beginTransaction();
+            
+            $stmtBG = $con->prepare('DELETE FROM bookgenre WHERE genre_id = ?');
+            $stmtBG->execute([$genre_id]);
+
+            $stmtBook = $con->prepare('DELETE FROM genres WHERE genre_id = ?');
+            $stmtBook->execute([$genre_id]);
+
+            $con->commit();
+            return true;
+        }catch (PDOException $e) {
+            if ($con->inTransaction()) {
+                $con->rollBack();
+            }
+            throw $e;
+        }
+    }
+
 }
 
-    //For Admin Dashboard
         
 ?>

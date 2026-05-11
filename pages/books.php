@@ -276,10 +276,11 @@ if(isset($_POST['delete_books'])){
             echo '<td>' . $book['book_isbn'] . '</td>';
             echo '<td>' . $book['book_publication_year'] . '</td>';
             echo '<td>' . $book['book_publisher'] . '</td>';
-            echo '<td><span class="badge bg-primary">' . $book['copies'] . '</span></td>';
+            echo '<td><span class="badge bg-info">' . $book['copies'] . '</span></td>';
             echo '<td><span class="badge bg-success">' . $book['available_copies'] . '</span></td>';
             echo '<td class="text-end">';
-
+            echo '<div class="btn-group" role="group">';
+            
             echo '<button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editBookModal" 
             data-book-id="' . $book['book_id'] . '"
             data-book-title="' . $book['book_title'] . '"
