@@ -4,7 +4,7 @@ class database {
     function opencon(): PDO {
         return new PDO(
             'mysql:host=localhost;
-            dbname=dbs_app',
+            dbname=abs_app',
             'root',
             ''
         );
@@ -251,6 +251,56 @@ class database {
     return $result ? $result->fetchAll() : [];
     }
 
+    function createLoanWithItems($borrower_id, $processed_by_user_id, $copy_ids, $li_duedate, $condition_out){
+        $con = $this->opencon();
+        
+        try{
+            $con->beginTransaction();
+            $insertLoanStmt = $con->prepare("INSERT INTO Loan (borrower_id, processed_by_user_id, loan_status, loan_date) VALUES (?, ?, 'OPEN', NOW())");
+            $insertLoanStmt->execute([$borrower_id, $processed_by_user_id]);
+            $loan_id = $con->lastInsertId();
+
+            $checkCopyStmt = $con->prepare("SELECT bc_status FROM BookCopy WHERE copy_id = ?");
+            $activeLoanStmt = $con->prepare("SELECT COUNT(*) as active_count FROM LoanItem JOIN Loan ON LoanItem.loan_id = Loan.loan_id WHERE LoanItem.copy_id = ? AND LoanItem.li_returned_at IS NULL AND Loan.loan_status = 'OPEN'");
+        
+            $insertLoanItemStmt = $con->prepare("INSERT INTO loanitem(loan_id, copy_id, li_duedate, condition_out) VALUES (?,?,?,?)");
+            $updateCopyStmt = $con->prepare("UPDATE bookcopy SET bc_status = 'ON_LOAN' WHERE copy_id = ?");
+            
+            foreach ($copy_ids as $copy_id) {
+
+            $checkCopyStmt->execute([$copy_id]);
+            $copyStatus = $checkCopyStmt->fetch();
+
+            if (!$copyStatus) {
+                throw new Exception("Copy ID $copy_id does not exist.");
+            }
+
+            if ($copyStatus['bc_status'] !== 'AVAILABLE') {
+                throw new Exception("Copy ID $copy_id is not available.");
+            }
+
+            $activeLoanStmt->execute([$copy_id]);
+            $activeLoan = $activeLoanStmt->fetch();
+
+            if ($activeLoan['active_count'] > 0) {
+                throw new Exception("Copy already on active loan.");
+            }
+
+            $insertLoanItemStmt->execute([$loan_id, $copy_id, $li_duedate, $condition_out]);
+            $updateCopyStmt->execute([$copy_id]);
+            
+            } $con->commit();
+              return $loan_id;
+            
+        }catch(Exception $e) {
+            if ($con->inTransaction()) {
+                $con->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+
     function updateBook($book_id, $book_title, $book_isbn, $book_publication_year, $book_edition, $book_publisher) {
         $con = $this->opencon();
         try {
@@ -378,6 +428,28 @@ class database {
         }
     }
 
+    function getActiveBorrowers(){
+        $con = $this->opencon();
+        return $con->query("SELECT 
+        borrower_id, 
+        CONCAT(borrower_firstname, ' ', borrower_lastname) AS borrower_name 
+        FROM borrowers 
+        WHERE is_active = 1")->fetchAll();
+    }
+
+    function getAvailableCopies(){
+        $con = $this->opencon();
+        return $con->query("SELECT 
+        bookcopy.copy_id,
+        books.book_id,
+        books.book_title
+        FROM books
+        JOIN bookcopy ON books.book_id = bookcopy.book_id
+        WHERE bookcopy.bc_status = 'AVAILABLE'
+        ORDER BY books.book_title")->fetchAll();
+    }
+
+    
 }
 
         
