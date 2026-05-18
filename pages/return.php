@@ -1,3 +1,39 @@
+<?php 
+require_once('../classes/database.php');
+
+$con = new database();
+
+$onLoanItem = $con->getOnLoanItem();
+
+$checkoutStatus = null;
+$checkoutMessage = '';
+
+if(isset($_POST['process_return'])){
+  $loan_item_id = $_POST['loan_item_id'];
+  $li_returned_at = $_POST['li_returned_at'];
+  $condition_in = $_POST['condition_in']; 
+
+  if(empty($loan_item_id)){
+    $checkoutStatus = 'error';
+    $checkoutMessage = 'Please provide one valid loan item ID.';
+  } else{
+    try {
+      $loan_id =$con->processLoanReturn(
+        $loan_item_id, 
+        $li_returned_at, 
+        $condition_in
+      );    
+      $checkoutStatus = 'success';
+      $checkoutMessage = 'Loan Item returned successfully (Loan Item ID: ' . $loan_item_id . ')';
+      } catch(Exception $e) {
+        $checkoutStatus = 'error';
+      $checkoutMessage = 'Error creating loan: ' . $e->getMessage();
+      }
+  }
+}
+
+?>
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -19,6 +55,21 @@
     </div>
   </div>
 </nav>
+<?php if (isset($checkoutStatus) && $checkoutStatus): ?>
+<div class="container py-3">
+
+  <div class="alert alert-<?php echo $checkoutStatus === 'success' ? 'success' : 'danger'; ?>">
+
+    <strong>
+      <?php echo $checkoutStatus === 'success' ? 'Success!' : 'Error!'; ?>
+    </strong>
+
+    <?php echo $checkoutMessage; ?>
+
+  </div>
+
+</div>
+<?php endif; ?>
 
 <main class="container py-4">
   <div class="card p-4">
@@ -44,10 +95,37 @@
       </div>
 
       <div class="col-12">
-        <button class="btn btn-primary" type="submit">Confirm Return</button>
+        <button class="btn btn-primary" type="submit" name="process_return">Confirm Return</button>
       </div>
-    </form>
+      </form>
   </div>
+
+  <div class="card p-4">
+        <h6 class="mb-3">Active Loan</h6>
+        <div class="table-responsive">
+        <table class="table table-sm mb-0">
+        <thead class="table-light">
+        <tr>
+        <th>Loan Item ID</th>
+        <th>Book Title</th>
+        <th>Due Date</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($onLoanItem as $loanitems): ?>
+        <tr>
+        <td><?php echo htmlspecialchars($loanitems['loan_item_id']); ?></td>
+        <td class="small"><?php echo htmlspecialchars($loanitems['book_title']); ?></td>
+        <td><?php echo htmlspecialchars($loanitems['li_duedate']); ?></td>
+        </tr>
+        <?php endforeach; ?>
+        </tbody>
+        </table>
+        </div>
+        </div>
+      </div>
+
+
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

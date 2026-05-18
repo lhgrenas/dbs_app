@@ -300,6 +300,53 @@ class database {
         }
     }
 
+    function processLoanReturn($loan_item_id, $li_returned_at, $condition_in){
+        $con = $this->opencon();
+
+        try {
+        $con->beginTransaction();
+        $getLoanItemStmt=$con->prepare("SELECT copy_id, loan_id FROM loanitem WHERE loan_item_id = ?");
+        $getLoanItemStmt->execute([$loan_item_id]);
+    
+        $loanItem = $getLoanItemStmt->fetch();
+        if(!$loanItem){
+            throw new Exception("Loan Item ID $loan_item_id does not exist.");
+        }
+
+        $copy_id = $loanItem["copy_id"];
+        $loan_id = $loanItem["loan_id"];
+        
+        $updateReturnDateStmt = $con->prepare("UPDATE loanitem SET li_returned_at = ?, condition_in = ? WHERE loan_item_id = ?");
+        $updateReturnDateStmt->execute([$li_returned_at,$condition_in, $loan_item_id]);
+
+        $updateBookCopy = $con->prepare("UPDATE bookcopy SET bc_status = 'AVAILABLE' WHERE copy_id = ?");
+        $updateBookCopy->execute([$copy_id]);
+
+
+        $checkLoanItems = $con->prepare("SELECT COUNT(*) AS unreturned_count FROM loanitem WHERE loan_id = ? AND li_returned_at IS NULL");
+
+     
+        $checkLoanItems->execute([$loan_id]);   
+        $result= $checkLoanItems->fetch();
+
+     
+
+        if($result['unreturned_count'] == 0) {
+            $updateLoan = $con->prepare("UPDATE loan SET loan_status = 'Closed' WHERE loan_id = ?");
+            $updateLoan->execute([$loan_id]);
+        }
+
+        $con->commit();
+        return true;
+
+        }catch(Exception $e) {
+            if ($con->inTransaction()) {
+                $con->rollBack();
+            }
+            throw $e;
+        }
+    }
+
 
     function updateBook($book_id, $book_title, $book_isbn, $book_publication_year, $book_edition, $book_publisher) {
         $con = $this->opencon();
@@ -447,6 +494,20 @@ class database {
         JOIN bookcopy ON books.book_id = bookcopy.book_id
         WHERE bookcopy.bc_status = 'AVAILABLE'
         ORDER BY books.book_title")->fetchAll();
+    }
+
+    function getOnLoanItem(){
+        $con = $this->opencon();
+        return $con->query("SELECT loanitem.loan_item_id, 
+        books.book_title, 
+        loanitem.li_duedate,
+        loanitem.li_returned_at, 
+        loan.loan_status 
+        FROM loanitem
+        JOIN loan ON loan.loan_id = loanitem.loan_id
+        JOIN bookcopy ON bookcopy.copy_id = loanitem.copy_id
+        JOIN books ON books.book_id = bookcopy.book_id
+        WHERE loanitem.li_returned_at IS NULL AND loan.loan_status = 'Open'")->fetchAll();
     }
 
     
